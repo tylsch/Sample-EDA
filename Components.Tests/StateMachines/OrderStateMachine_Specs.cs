@@ -1,6 +1,6 @@
 using NUnit.Framework;
 
-namespace Components.Tests
+namespace Components.Tests.StateMachines
 {
     public class OrderStateMachineTests
     {
