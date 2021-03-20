@@ -13,4 +13,9 @@
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Components\Components.csproj" />
+      <ProjectReference Include="..\Contracts\Contracts.csproj" />
+    </ItemGroup>
+
 </Project>

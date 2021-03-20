@@ -2,7 +2,7 @@ using NUnit.Framework;
 
 namespace Components.Tests
 {
-    public class Tests
+    public class OrderStateMachineTests
     {
         [SetUp]
         public void Setup()

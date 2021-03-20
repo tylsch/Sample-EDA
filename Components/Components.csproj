@@ -5,12 +5,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Consumers" />
-      <Folder Include="StateMachines" />
+      <PackageReference Include="MassTransit" Version="7.1.6" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="MassTransit" Version="7.1.6" />
+      <ProjectReference Include="..\Contracts\Contracts.csproj" />
     </ItemGroup>
 
 </Project>
