@@ -126,15 +126,11 @@ namespace Components.Tests.StateMachines
                 
                 await harness.Bus.Publish<IPaymentCaptured>(new
                 {
-                    TransactionId = "2452354325",
-                    CapturedDateTime = DateTime.UtcNow
+                    TransactionId = "2452354325"
                 });
                 
                 instanceId = await saga.Exists(paymentId, x => x.Captured);
                 Assert.That(instanceId, Is.Not.Null);
-                
-                instance = saga.Sagas.Contains(instanceId.Value);
-                Assert.That(instance.CapturedDateTime, Is.Not.Null);
             }
             finally
             {

@@ -14,6 +14,5 @@ namespace Components.StateMachines
 
         public string AuthorizationCode { get; set; }
         public string TransactionId { get; set; }
-        public DateTime? CapturedDateTime { get; set; }
     }
 }

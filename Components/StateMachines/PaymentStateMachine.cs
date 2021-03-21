@@ -27,10 +27,6 @@ namespace Components.StateMachines
                 When(OnCancelled)
                     .TransitionTo(Cancelled),
                 When(OnCaptured)
-                    .Then(ctx =>
-                    {
-                        ctx.Instance.CapturedDateTime = ctx.Data.CapturedDateTime;
-                    })
                     .TransitionTo(Captured));
         }
 
