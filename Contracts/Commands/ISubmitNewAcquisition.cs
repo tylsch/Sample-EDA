@@ -4,6 +4,6 @@ namespace Contracts.Commands
 {
     public interface ISubmitNewAcquisition
     {
-        public string ExternalOrderId { get; set; }
+        public string ExternalOrderId { get; }
     }
 }

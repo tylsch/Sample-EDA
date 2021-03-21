@@ -4,8 +4,8 @@ namespace Contracts.Events
 {
     public interface IPaymentAuthorized
     {
-        public Guid PaymentId { get; set; }
-        public string AuthorizationCode { get; set; }
-        public string TransactionId { get; set; }
+        public Guid PaymentId { get; }
+        public string AuthorizationCode { get; }
+        public string TransactionId { get; }
     }
 }

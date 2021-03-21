@@ -4,7 +4,7 @@ namespace Contracts.Events
 {
     public interface IOrderSubmitted
     {
-        public Guid OrderId { get; set; }
-        public string ExternalOrderId { get; set; }
+        public Guid OrderId { get; }
+        public string ExternalOrderId { get; }
     }
 }

@@ -4,6 +4,6 @@ namespace Contracts.Events
 {
     public interface IPaymentCancelled
     {
-        public Guid PaymentId { get; set; }
+        public Guid PaymentId { get; }
     }
 }
