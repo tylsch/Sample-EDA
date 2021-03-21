@@ -8,6 +8,7 @@ namespace Components.StateMachines
         public PaymentStateMachine()
         {
             Event(() => OnAuthorized, x => x.CorrelateById(y => y.Message.PaymentId));
+            Event(() => OnCancelled, x => x.CorrelateById(y => y.Message.PaymentId));
             Event(() => OnCaptured, x => x.CorrelateBy((saga, context) => saga.TransactionId == context.Message.TransactionId));
             
             InstanceState(x => x.CurrentState);
@@ -23,6 +24,8 @@ namespace Components.StateMachines
             
             During(Authorized,
                 Ignore(OnAuthorized),
+                When(OnCancelled)
+                    .TransitionTo(Cancelled),
                 When(OnCaptured)
                     .Then(ctx =>
                     {
@@ -33,8 +36,10 @@ namespace Components.StateMachines
 
         public State Authorized { get; set; }
         public State Captured { get; set; }
+        public State Cancelled { get; set; }
 
         public Event<IPaymentAuthorized> OnAuthorized { get; private set; }
         public Event<IPaymentCaptured> OnCaptured { get; private set; }
+        public Event<IPaymentCancelled> OnCancelled { get; private set; }
     }
 }
