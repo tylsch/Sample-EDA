@@ -7,5 +7,6 @@ namespace Contracts.Events
         public Guid PaymentId { get; }
         public string AuthorizationCode { get; }
         public string TransactionId { get; }
+        public TimeSpan AuthorizationExpiration { get; set; }
     }
 }
