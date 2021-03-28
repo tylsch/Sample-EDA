@@ -11,14 +11,14 @@ namespace Components.StateMachines
         {
             Event(() => OnAuthorized, x => x.CorrelateById(y => y.Message.PaymentId));
             Event(() => OnCancelled, x => x.CorrelateById(y => y.Message.PaymentId));
-            Event(() => OnCaptured, x => x.CorrelateBy((saga, context) => saga.TransactionId == context.Message.TransactionId));
-            Event(() => OnRefunded, x => x.CorrelateBy((saga, context) => saga.TransactionId == context.Message.TransactionId));
+            Event(() => OnCaptured, x => x.CorrelateBy((instance, context) => instance.TransactionId == context.Message.TransactionId));
+            Event(() => OnRefunded, x => x.CorrelateBy((instance, context) => instance.TransactionId == context.Message.TransactionId));
             
-            // Schedule(() => OnAuthorizationExpired, x => x.AuthorizationExpiredTokenId, s =>
-            // {
-            //     s.Delay = TimeSpan.FromHours(6);
-            //     s.Received = x => x.CorrelateById(m => m.Message.PaymentId);
-            // });
+            Schedule(() => OnAuthorizationExpired, x => x.AuthorizationExpiredTokenId, s =>
+            {
+                s.Delay = TimeSpan.FromHours(6);
+                s.Received = x => x.CorrelateById(m => m.Message.PaymentId);
+            });
             
             InstanceState(x => x.CurrentState);
             
@@ -29,23 +29,23 @@ namespace Components.StateMachines
                         ctx.Instance.AuthorizationCode = ctx.Data.AuthorizationCode;
                         ctx.Instance.TransactionId = ctx.Data.TransactionId;
                     })
+                    .Schedule(OnAuthorizationExpired, context => context.Init<IAuthorizationExpired>(new
+                    {
+                        PaymentId = context.Data.PaymentId
+                    }), ctx => ctx.Data.AuthorizationExpiration)
                     .TransitionTo(Authorized)
-                    // .Schedule(OnAuthorizationExpired, context => context.Init<IAuthorizationExpired>(new
-                    // {
-                    //     PaymentId = context.Data.PaymentId
-                    // }), ctx => ctx.Data.AuthorizationExpiration)
-                );
+            );
             
             During(Authorized,
                 Ignore(OnAuthorized),
                 Ignore(OnRefunded),
-                // When(OnAuthorizationExpired.Received)
-                //     .TransitionTo(Cancelled),
+                When(OnAuthorizationExpired.Received)
+                .TransitionTo(Cancelled),
                 When(OnCancelled)
-                    // .Unschedule(OnAuthorizationExpired)
+                    .Unschedule(OnAuthorizationExpired)
                     .TransitionTo(Cancelled),
                 When(OnCaptured)
-                    // .Unschedule(OnAuthorizationExpired)
+                    .Unschedule(OnAuthorizationExpired)
                     .TransitionTo(Captured));
             
             During(Captured,
@@ -61,7 +61,7 @@ namespace Components.StateMachines
         public State Cancelled { get; set; }
         public State Refunded { get; set; }
 
-        // public Schedule<PaymentState, IAuthorizationExpired> OnAuthorizationExpired { get; set; }
+        public Schedule<PaymentState, IAuthorizationExpired> OnAuthorizationExpired { get; set; }
 
         public Event<IPaymentAuthorized> OnAuthorized { get; private set; }
         public Event<IPaymentCaptured> OnCaptured { get; private set; }
