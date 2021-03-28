@@ -9,90 +9,59 @@ using NUnit.Framework;
 
 namespace Components.Tests.StateMachines
 {
-    public class PaymentStateMachine_Specs
-    {
-        [SetUp]
-        public void Setup()
-        {
-        }
-
+    public class PaymentStateMachineSpecs : StateMachineTestFixture<PaymentStateMachine, PaymentState>
+    { 
         [Test]
         public async Task Should_insert_new_state_instance_on_authorized()
         {
-            var paymentStateMachine = new PaymentStateMachine();
+            var paymentId = NewId.NextGuid();
 
-            var harness = new InMemoryTestHarness {TestTimeout = TimeSpan.FromSeconds(5)};
-            var saga = harness.StateMachineSaga<PaymentState, PaymentStateMachine>(paymentStateMachine);
-
-            await harness.Start();
-            try
+            await TestHarness.Bus.Publish<IPaymentAuthorized>(new
             {
-                var paymentId = NewId.NextGuid();
 
-                await harness.Bus.Publish<IPaymentAuthorized>(new
-                {
+                PaymentId = paymentId,
+                AuthorizationCode = "PASS",
+                TransactionId = "2452354325"
+            });
 
-                    PaymentId = paymentId,
-                    AuthorizationCode = "PASS",
-                    TransactionId = "2452354325"
-                });
+            Assert.That(SagaHarness.Created.Select(x => x.CorrelationId == paymentId).Any(), Is.True);
 
-                Assert.That(saga.Created.Select(x => x.CorrelationId == paymentId).Any(), Is.True);
-
-                var instanceId = await saga.Exists(paymentId, x => x.Authorized);
-                Assert.That(instanceId, Is.Not.Null);
+            var instanceId = await SagaHarness.Exists(paymentId, x => x.Authorized);
+            Assert.That(instanceId, Is.Not.Null);
                 
-                var instance = saga.Sagas.Contains(instanceId.Value);
-                Assert.That(instance.AuthorizationCode, Is.EqualTo("PASS"));
-                Assert.That(instance.TransactionId, Is.EqualTo("2452354325"));
-            }
-            finally
-            {
-                await harness.Stop();
-            }
+            var instance = SagaHarness.Sagas.Contains(instanceId.Value);
+            Assert.That(instance.AuthorizationCode, Is.EqualTo("PASS"));
+            Assert.That(instance.TransactionId, Is.EqualTo("2452354325"));
         }
         
         [Test]
         public async Task Should_cancel_payment()
         {
-            var paymentStateMachine = new PaymentStateMachine();
+            var paymentId = NewId.NextGuid();
 
-            var harness = new InMemoryTestHarness {TestTimeout = TimeSpan.FromSeconds(5)};
-            var saga = harness.StateMachineSaga<PaymentState, PaymentStateMachine>(paymentStateMachine);
-
-            await harness.Start();
-            try
+            await TestHarness.Bus.Publish<IPaymentAuthorized>(new
             {
-                var paymentId = NewId.NextGuid();
+                PaymentId = paymentId,
+                AuthorizationCode = "PASS",
+                TransactionId = "2452354325"
+            });
 
-                await harness.Bus.Publish<IPaymentAuthorized>(new
-                {
-                    PaymentId = paymentId,
-                    AuthorizationCode = "PASS",
-                    TransactionId = "2452354325"
-                });
+            Assert.That(SagaHarness.Created.Select(x => x.CorrelationId == paymentId).Any(), Is.True);
 
-                Assert.That(saga.Created.Select(x => x.CorrelationId == paymentId).Any(), Is.True);
-
-                var instanceId = await saga.Exists(paymentId, x => x.Authorized);
-                Assert.That(instanceId, Is.Not.Null);
+            var instanceId = await SagaHarness.Exists(paymentId, x => x.Authorized);
+            Assert.That(instanceId, Is.Not.Null);
                 
-                var instance = saga.Sagas.Contains(instanceId.Value);
-                Assert.That(instance.AuthorizationCode, Is.EqualTo("PASS"));
-                Assert.That(instance.TransactionId, Is.EqualTo("2452354325"));
+            var instance = SagaHarness.Sagas.Contains(instanceId.Value);
+            Assert.That(instance.AuthorizationCode, Is.EqualTo("PASS"));
+            Assert.That(instance.TransactionId, Is.EqualTo("2452354325"));
                 
-                await harness.Bus.Publish<IPaymentCancelled>(new
-                {
-                    PaymentId = paymentId
-                });
-                
-                instanceId = await saga.Exists(paymentId, x => x.Cancelled);
-                Assert.That(instanceId, Is.Not.Null);
-            }
-            finally
+            await TestHarness.Bus.Publish<IPaymentCancelled>(new
             {
-                await harness.Stop();
-            }
+                PaymentId = paymentId
+            });
+                
+            instanceId = await SagaHarness.Exists(paymentId, x => x.Cancelled);
+            Assert.That(instanceId, Is.Not.Null);
         }
         
         [Test]
@@ -141,90 +110,66 @@ namespace Components.Tests.StateMachines
         [Test]
         public async Task Should_mark_state_as_refunded_when_payment_is_refunded()
         {
-            var paymentStateMachine = new PaymentStateMachine();
+            var paymentId = NewId.NextGuid();
 
-            var harness = new InMemoryTestHarness {TestTimeout = TimeSpan.FromSeconds(5)};
-            var saga = harness.StateMachineSaga<PaymentState, PaymentStateMachine>(paymentStateMachine);
-
-            await harness.Start();
-            try
+            await TestHarness.Bus.Publish<IPaymentAuthorized>(new
             {
-                var paymentId = NewId.NextGuid();
+                PaymentId = paymentId,
+                AuthorizationCode = "PASS",
+                TransactionId = "2452354325"
+            });
 
-                await harness.Bus.Publish<IPaymentAuthorized>(new
-                {
-                    PaymentId = paymentId,
-                    AuthorizationCode = "PASS",
-                    TransactionId = "2452354325"
-                });
+            Assert.That(SagaHarness.Created.Select(x => x.CorrelationId == paymentId).Any(), Is.True);
 
-                Assert.That(saga.Created.Select(x => x.CorrelationId == paymentId).Any(), Is.True);
-
-                var instanceId = await saga.Exists(paymentId, x => x.Authorized);
-                Assert.That(instanceId, Is.Not.Null);
+            var instanceId = await SagaHarness.Exists(paymentId, x => x.Authorized);
+            Assert.That(instanceId, Is.Not.Null);
                 
-                var instance = saga.Sagas.Contains(instanceId.Value);
-                Assert.That(instance.AuthorizationCode, Is.EqualTo("PASS"));
-                Assert.That(instance.TransactionId, Is.EqualTo("2452354325"));
+            var instance = SagaHarness.Sagas.Contains(instanceId.Value);
+            Assert.That(instance.AuthorizationCode, Is.EqualTo("PASS"));
+            Assert.That(instance.TransactionId, Is.EqualTo("2452354325"));
                 
-                await harness.Bus.Publish<IPaymentCaptured>(new
-                {
-                    TransactionId = "2452354325"
-                });
-                
-                instanceId = await saga.Exists(paymentId, x => x.Captured);
-                Assert.That(instanceId, Is.Not.Null);
-                
-                await harness.Bus.Publish<IPaymentRefunded>(new
-                {
-                    TransactionId = "2452354325"
-                });
-                
-                instanceId = await saga.Exists(paymentId, x => x.Refunded);
-                Assert.That(instanceId, Is.Not.Null);
-            }
-            finally
+            await TestHarness.Bus.Publish<IPaymentCaptured>(new
             {
-                await harness.Stop();
-            }
+                TransactionId = "2452354325"
+            });
+                
+            instanceId = await SagaHarness.Exists(paymentId, x => x.Captured);
+            Assert.That(instanceId, Is.Not.Null);
+                
+            await TestHarness.Bus.Publish<IPaymentRefunded>(new
+            {
+                TransactionId = "2452354325"
+            });
+                
+            instanceId = await SagaHarness.Exists(paymentId, x => x.Refunded);
+            Assert.That(instanceId, Is.Not.Null);
         }
         
         [Test]
         public async Task Should_cancel_payment_when_auth_expires()
         {
-            var paymentStateMachine = new PaymentStateMachine();
+            var paymentId = NewId.NextGuid();
 
-            var harness = new InMemoryTestHarness { TestTimeout = TimeSpan.FromSeconds(1) };
-            var saga = harness.StateMachineSaga<PaymentState, PaymentStateMachine>(paymentStateMachine);
-
-            await harness.Start();
-            try
+            await TestHarness.Bus.Publish<IPaymentAuthorized>(new
             {
-                var paymentId = NewId.NextGuid();
+                PaymentId = paymentId,
+                AuthorizationCode = "PASS",
+                TransactionId = "2452354325",
+                AuthorizationExpiration = TimeSpan.FromHours(6)
+            });
 
-                await harness.Bus.Publish<IPaymentAuthorized>(new
-                {
-                    PaymentId = paymentId,
-                    AuthorizationCode = "PASS",
-                    TransactionId = "2452354325",
-                    AuthorizationExpiration = TimeSpan.FromSeconds(1)
-                });
+            Assert.That(SagaHarness.Created.Select(x => x.CorrelationId == paymentId).Any(), Is.True);
+            var instanceId = await SagaHarness.Exists(paymentId, x => x.Authorized);
+            Assert.That(instanceId, Is.Not.Null);
+            var instance = SagaHarness.Sagas.Contains(instanceId.Value);
+            Assert.That(instance.AuthorizationCode, Is.EqualTo("PASS"));
+            Assert.That(instance.TransactionId, Is.EqualTo("2452354325"));
 
-                Assert.That(saga.Created.Select(x => x.CorrelationId == paymentId).Any(), Is.True);
-                var instanceId = await saga.Exists(paymentId, x => x.Authorized);
-                Assert.That(instanceId, Is.Not.Null);
-                var instance = saga.Sagas.Contains(instanceId.Value);
-                Assert.That(instance.AuthorizationCode, Is.EqualTo("PASS"));
-                Assert.That(instance.TransactionId, Is.EqualTo("2452354325"));
-                
+            await AdvanceSystemTime(TimeSpan.FromHours(7));
 
-                // instanceId = await saga.Exists(paymentId, x => x.Cancelled);
-                // Assert.That(instanceId, Is.Not.Null);
-            }
-            finally
-            {
-                await harness.Stop();
-            }
+
+            // instanceId = await SagaHarness.Exists(paymentId, x => x.Cancelled);
+            // Assert.That(instanceId, Is.Not.Null);
         }
     }
 }
