@@ -12,16 +12,6 @@ namespace Components.Tests.StateMachines
 {
     public class PaymentStateMachineSpecs : StateMachineTestFixture<PaymentStateMachine, PaymentState>
     {
-        protected override void ConfigureMassTransit(IServiceCollectionBusConfigurator configurator)
-        {
-            configurator.AddSagaStateMachine<PaymentStateMachine, PaymentState>()
-                .InMemoryRepository();
-
-            configurator.AddPublishMessageScheduler();
-
-            configurator.AddSagaStateMachineTestHarness<PaymentStateMachine, PaymentState>();
-        }
-
         [Test]
         public async Task Should_insert_new_state_instance_on_authorized()
         {
